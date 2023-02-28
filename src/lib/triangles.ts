@@ -1,45 +1,66 @@
 import * as THREE from 'three';
+import { lerp } from 'three/src/math/MathUtils';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x724e2c );
-const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const zoom = 50;
+const getWidth = () => window.innerWidth/zoom;
+const getHeight = () => window.innerHeight/zoom;
+const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.9,10.1);
 
 // set the camera position
-camera.position.set(0,0,100);
+camera.position.set(0,0,10);
 camera.lookAt(0,0,0);
 
 //fit the rendered scene inside the viewport element
-
 let renderer : THREE.WebGLRenderer;
+interface Point {
+    x : number;
+    y : number;
+}
+interface Triangle {
+    a : Point;
+    b : Point;
+    c : Point;
+}
+interface Color {
+    r : number;
+    g : number;
+    b : number;
+}
 
 function createRandomPoints(n : number) {
-    const points : THREE.Vector3[] = [];
+    const points : Point[] = [];
     for (let i = 0; i < n; i++) {
         points.push(createRandomPoint());
     }
     return points;
 }
 function createRandomPoint(){
-    return new THREE.Vector3(Math.random() * 50 - 25, Math.random() * 50 - 25, 0);
+    return {x:(Math.random() * getWidth() - getWidth()/2), y:(Math.random() * getHeight() - getHeight()/2)};
+}
+function createRandomTrajectory(){
+    return {x:Math.random() * 0.05 - 0.025, y:Math.random() * 0.05-0.025};
 }
 
 function createRandomTrajectories(n : number) {
-    const trajectories : THREE.Vector3[] = [];
+    const trajectories : Point[] = [];
     for (let i = 0; i < n; i++) {
-        // trajectories between -1 and 1
-        trajectories.push(new THREE.Vector3(Math.random() * 0.25 - 0.125, Math.random() * 0.25 - 0.125, 0));
+        // trajectories between -0.025 and 0.025
+        trajectories.push(createRandomTrajectory() );
     }
     return trajectories;
 }
 
 
 // helper function to sort the verticies of a triangle in counterclockwise order
-function sortVerticies(triangle : THREE.Triangle) {
+function sortVerticies(triangle : Triangle) {
     let verticies = [triangle.a,triangle.b,triangle.c];
-    let centroid = new THREE.Vector3((verticies[0].x + verticies[1].x + verticies[2].x)/3,(verticies[0].y + verticies[1].y + verticies[2].y)/3,0);
+    let cx = (triangle.a.x + triangle.b.x + triangle.c.x)/3;
+    let cy = (triangle.a.y + triangle.b.y + triangle.c.y)/3;
     verticies.sort((a,b) => {
-        let a1 = Math.atan2(a.x-centroid.x,a.y-centroid.y);
-        let b1 = Math.atan2(b.x-centroid.x,b.y-centroid.y);
+        let a1 = Math.atan2(a.x-cx,a.y-cy);
+        let b1 = Math.atan2(b.x-cx,b.y-cy);
         return b1 - a1;
     });
     
@@ -69,19 +90,19 @@ function inCircle (ax: number, ay: number, bx :number, by: number, cx : number, 
 
 
 
-function createDelaunayTriangles(points : THREE.Vector3[]) : Map<THREE.Triangle,boolean> {
-    
-    // create a map of triangles
-    let triangles : Map<THREE.Triangle,boolean> = new Map();
+function createDelaunayTriangles(points : Point[]) {
+    let triangles : Map<Triangle,boolean> = new Map();
     // create supertriangle
-    let st1 = new THREE.Vector3(0,1000,0);
-    let st2 = new THREE.Vector3(-1000,-1000,0);
-    let st3 = new THREE.Vector3(1000,-1000,0);
+    let st1 : Point = {x:1000,y:1000};
+    let st2 : Point = {x:-1000,y:1000};
+    let st3 : Point = {x:0,y:-1000};
     let stVertices = [st1,st2,st3];
-    let supertriangle = new THREE.Triangle(st1,st2,st3);
+    let supertriangle : Triangle = {a:st1,b:st2,c:st3};
     triangles.set(supertriangle,true);
 
-    const resolveEdges = (p1 : THREE.Vector3,p2 : THREE.Vector3, edgebuffer : Map<THREE.Vector3,Map<THREE.Vector3,boolean>>) => {
+
+    let edgebuffer : Map<Point,Map<Point,boolean>> = new Map();
+    const resolveEdges = (p1 : Point,p2 : Point) => {
         if(edgebuffer.has(p1) && edgebuffer.has(p2)){
             if(edgebuffer.get(p1)!.has(p2) || edgebuffer.get(p2)!.has(p1)){ // is doubled edge, set usable flag to false
                 edgebuffer.get(p1)!.set(p2,false);
@@ -92,61 +113,183 @@ function createDelaunayTriangles(points : THREE.Vector3[]) : Map<THREE.Triangle,
             }
         }else if(edgebuffer.has(p1)){ // p1 exists in edgebuffer, but p2 does not
             edgebuffer.set(p2,new Map().set(p1,true));
-            edgebuffer.get(p1).set(p2,true);
+            edgebuffer.get(p1)!.set(p2,true);
         }else if(edgebuffer.has(p2)){ // p2 exists in edgebuffer, but p1 does not
             edgebuffer.set(p1,new Map().set(p2,true));
-            edgebuffer.get(p2).set(p1,true);
+            edgebuffer.get(p2)!.set(p1,true);
         }else{
             edgebuffer.set(p1,new Map().set(p2,true));
             edgebuffer.set(p2,new Map().set(p1,true));
         }
     }
-    points.forEach(point => {
+    for(let i = 0; i < points.length; i++){
         // add points one at a time
-        let edgebuffer : Map<THREE.Vector3,Map<THREE.Vector3,boolean>> = new Map();
+
+        // O(n) check all triangles to see if they contain the point, takes the longest computation time
         triangles.forEach((_,triangle) => { //why javascript... why is it value, key instead of key, value
             if (inCircle(triangle.a.x,triangle.a.y,
                 triangle.b.x,triangle.b.y,
                 triangle.c.x,triangle.c.y,
-                point.x,point.y)) { 
-                // add edges to edgebuffer
-                resolveEdges(triangle.a,triangle.b,edgebuffer);
-                resolveEdges(triangle.b,triangle.c,edgebuffer);
-                resolveEdges(triangle.c,triangle.a,edgebuffer);
+                points[i].x,points[i].y)) { 
+                // add edges to edgebuffer, if edge is already in edgebuffer, set flag to false so they get removed later
+                resolveEdges(triangle.a,triangle.b);
+                resolveEdges(triangle.b,triangle.c);
+                resolveEdges(triangle.c,triangle.a);
                 triangles.delete(triangle);
             }
         });
 
-        
         // add new triangles to triangulation
+        // O(n)
         edgebuffer.forEach((pts,p1) => {
             pts.forEach((_,p2) => {
                 if(edgebuffer.get(p1)!.get(p2)){
-                    triangles.set(sortVerticies(new THREE.Triangle(p1,p2,point)),true);
+                    triangles.set(sortVerticies({a: p1,b: p2, c:points[i]}),true);
                     // should prevent drawing every edge twice
                     edgebuffer.get(p1)!.set(p2,false);
                     edgebuffer.get(p2)!.set(p1,false);
                 }
             });
         });
-    });
-
+        edgebuffer.clear();
+    };
     
     triangles.forEach((_,triangle) => {
         // remove triangles with supertriangle vertices
         // remove supertriangle
-        if(triangle === supertriangle){
+        if(stVertices.includes(triangle.a) || stVertices.includes(triangle.b) || stVertices.includes(triangle.c)){
             triangles.delete(triangle);
         }
     });
+    // try to free memory
+
     return triangles;
 }
 
 
-function clearScene() {
-    while (scene.children.length > 0) { 
-        scene.remove(scene.children[0]); 
+// I have come to realize that this was a silly idea: creating a mesh and making it wireframe is soooooooo much easier
+// nevertheless, this is still kinda cool so I'll keep it here
+function createLineUsingDFSTriangles(triangles : Map<Triangle,boolean>) {
+    let lineGeometry = new THREE.BufferGeometry();
+    let lineVertices : Point[] = [];
+    let edges : Map<Point,Point[]> = new Map();
+    let visited : Map<Point,boolean> = new Map();
+
+    const makeEdge = (p1 : Point, p2 : Point) => {
+        if(edges.has(p1) && edges.has(p2)){
+            edges.get(p1)!.push(p2);
+            edges.get(p2)!.push(p1);
+        }else if(edges.has(p1)){
+            edges.set(p2,[p1]);
+            visited.set(p2,false);
+            edges.get(p1)!.push(p2);
+        }else if(edges.has(p2)){
+            edges.set(p1, [p2]);
+            visited.set(p1,false);
+            edges.get(p2)!.push(p1);
+        }else{
+            edges.set(p1, [p2]);
+            edges.set(p2, [p1]);
+            visited.set(p1,false);
+            visited.set(p2,false);
+        }
     }
+    // creates a map of each point to each edge, and a boolean flag for whether the edge has been traversed
+    triangles.forEach((_,triangle) => {
+        makeEdge(triangle.a,triangle.b);
+        makeEdge(triangle.b,triangle.c);
+        makeEdge(triangle.c,triangle.a);
+    });
+
+    // DFS to traverse edges
+    let stack : Point[] = [];
+    let start : Point = triangles.keys().next().value.a;
+    stack.push(start);
+    while(stack.length > 0){
+        let current : Point = stack.pop()!;
+        lineVertices.push(current);
+        visited.set(current,true);
+        edges.get(current)!.forEach((point) => {
+            if(!visited.get(point)){
+                stack.push(current);
+                stack.push(point);
+            }
+        });
+    }
+    let f32lineVerticies : Float32Array = new Float32Array(lineVertices.length*3); 
+    let count = 0;
+    lineVertices.forEach((point) => {
+        f32lineVerticies[count++] = point.x;
+        f32lineVerticies[count++] = point.y;
+        f32lineVerticies[count++] = 0;
+    });
+    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(f32lineVerticies,3));
+    edges.clear();
+    visited.clear();
+    return lineGeometry;
+}
+
+function createDelaunayMesh(triangles : Map<Triangle,boolean>) : THREE.Mesh {
+    let delaunayMesh = new THREE.Mesh();
+    let delaunayGeometry = new THREE.BufferGeometry();
+    let positions : number[] = new Array(triangles.size*3);
+    let count = 0;
+    triangles.forEach((_,triangle) => {
+        positions[count] = triangle.a.x;
+        positions[count+1] = triangle.a.y;
+        positions[count+2] = 0;
+        positions[count+3] = triangle.b.x;
+        positions[count+4] = triangle.b.y;
+        positions[count+5] = 0;
+        positions[count+6] = triangle.c.x;
+        positions[count+7] = triangle.c.y;
+        positions[count+8] = 0;
+        count+=9;
+    });
+    delaunayGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    delaunayMesh.geometry = delaunayGeometry;
+    delaunayMesh.material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false});
+    return delaunayMesh;
+}
+
+function createGradientDelaunayMesh(triangles : Map<Triangle,boolean>, c1 : Color, c2 : Color) : THREE.Mesh {
+    let delaunayMesh = new THREE.Mesh();
+    let delaunayGeometry = new THREE.BufferGeometry();
+    let positions : number[] = new Array(triangles.size*3);
+    let colors : number[] = new Array(triangles.size);
+    let count = 0;
+    let colorCount = 0;
+    let meshColors : THREE.MeshBasicMaterial[] = [];
+    triangles.forEach((_,triangle) => {
+        positions[count] = triangle.a.x;
+        positions[count+1] = triangle.a.y;
+        positions[count+2] = 0;
+        positions[count+3] = triangle.b.x;
+        positions[count+4] = triangle.b.y;
+        positions[count+5] = 0;
+        positions[count+6] = triangle.c.x;
+        positions[count+7] = triangle.c.y;
+        positions[count+8] = 0;
+        let lerpPercent = (triangle.a.y + triangle.b.y + triangle.c.y)/3/2/getHeight() + 0.5;
+        let r = lerp(c1.r,c2.r, lerpPercent) / 255;
+        let g = lerp(c1.g,c2.g, lerpPercent) / 255;
+        let b = lerp(c1.b,c2.b, lerpPercent) / 255;
+        count+=9;
+        colorCount+=3;
+        let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false, color: new THREE.Color(r,g,b)});
+        meshColors.push(material);
+    });
+    delaunayGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    for(let i = 0; i < triangles.size; i++){
+        delaunayGeometry.addGroup(i*3,3,i);
+    }
+    delaunayMesh.geometry = delaunayGeometry;
+    delaunayMesh.material = meshColors;
+    return delaunayMesh;
+}
+
+function clearScene() {
+    scene.clear();
 }
 
 
@@ -164,13 +307,20 @@ const numPoints = 100;
 const points = createRandomPoints(numPoints);
 const pointTrajectories = createRandomTrajectories(numPoints);
 
-let delaunayTriangles : Map<THREE.Triangle,boolean> = createDelaunayTriangles(points);
+// Keeps the triangles filling the whole screen, no matter what
+points.push({x: -getWidth(), y: -getHeight()});
+points.push({x: -getWidth(), y: getHeight()});
+points.push({x: getWidth(), y: -getHeight()});
+points.push({x: getWidth(), y: getHeight()});
 
+const COOL_BLUE = {r: 5, g: 163, b: 164};
+const DARK_BLUE = {r: 0, g: 99, b: 115};
+const DARK_PURPLE = {r: 0x3A, g: 0x07, b: 0x51};
+const WARM_RED = {r: 0xEE, g: 0x3E, b: 0x38};
 const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff} );
+
 const pointMaterialOutOfCircle = new THREE.PointsMaterial( { color: 0xff0000, size: 1 } );
 const pointMaterialInCircle = new THREE.PointsMaterial( { color: 0x00ff00, size: 1 } );
-const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),lineMaterial);
-scene.add(line);
 // render the scene once
 
 // TEST CODE
@@ -179,20 +329,24 @@ function test_inCircleVisual(){
     let test_triangle = new THREE.Triangle(new THREE.Vector3(10,0,0),new THREE.Vector3(-20,0,0),new THREE.Vector3(0,13,0));
     sortVerticies(test_triangle);
     scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([test_triangle.a,test_triangle.b,test_triangle.c,test_triangle.a]),lineMaterial));
-    const innerPoints : THREE.Vector3[] = [];
-    const outerPoints : THREE.Vector3[] = [];
+    const innerPoints : number[] = [];
+    const outerPoints : number[] = [];
     points.forEach(point => {
         if (inCircle(test_triangle.a.x,test_triangle.a.y,
             test_triangle.b.x,test_triangle.b.y,
             test_triangle.c.x,test_triangle.c.y,
             point.x,point.y)) { 
-            innerPoints.push(point);
+            innerPoints.push(point.x);
+            innerPoints.push(point.y);
+            innerPoints.push(0);
         }else{
-            outerPoints.push(point);
+            outerPoints.push(point.x);
+            outerPoints.push(point.y);
+            outerPoints.push(0);
         }
     });
-    scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(innerPoints),pointMaterialInCircle));
-    scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(outerPoints),pointMaterialOutOfCircle));
+   // scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(innerPoints),pointMaterialInCircle));
+   // scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(outerPoints),pointMaterialOutOfCircle));
 
     renderer.render( scene, camera );
 }
@@ -225,77 +379,63 @@ function test_inCircle(){
     });
 }
 
-function testRandomThings(){
-    let set1 = new Set([1,2,3,4,5]);
-    let set2 = new Set([1,2,4,3,5]);
-    console.log("set equality", set1 == set2);
-}
-
 
 // dynamic animation loop if needed
-function animate(){
-    requestAnimationFrame(animate);
+function draw(){
     // put any animation code here
 
     for(let i = 0; i < numPoints; i++) {
         // add each trajectory to it's point
-        points[i].add(pointTrajectories[i]);
-
+        points[i].x += pointTrajectories[i].x;
+        points[i].y += pointTrajectories[i].y;
         // if the point is out of bounds, reverse the trajectory
-        if (points[i].x > 100 || points[i].x < -100) {
+        if (points[i].x > getWidth()*0.7 || points[i].x < -getWidth() * 0.7) {
             pointTrajectories[i].x *= -1;
         }
-        if (points[i].y > 50 || points[i].y < -50) {
+        if (points[i].y > getHeight()*0.7 || points[i].y < -getHeight()*0.7) {
             pointTrajectories[i].y *= -1;
         }
     }
     clearScene();
-    delaunayTriangles = createDelaunayTriangles(points);
-    delaunayTriangles.forEach((_,triangle) => {
-        const triangleGeometry : THREE.Vector3[] = [];
-
-        if(triangle.a != null){
-            triangleGeometry.push(triangle.a);
-        }
-        if(triangle.b != null){
-            triangleGeometry.push(triangle.b);
-        }
-        if(triangle.c != null){
-            triangleGeometry.push(triangle.c);
-        }
-        if(triangle.a != null && triangle.b != null && triangle.c != null){
-            triangleGeometry.push(triangle.a);
-        }
-        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(triangleGeometry),lineMaterial));
-    });
+    let delaunayTriangles : Map<Triangle,boolean> = createDelaunayTriangles(points);
+    let delaunayLine = new THREE.Line(createLineUsingDFSTriangles(delaunayTriangles),lineMaterial);
+    let delaunayMesh = createGradientDelaunayMesh(delaunayTriangles,WARM_RED,COOL_BLUE);
+    scene.add(delaunayLine);
+    scene.add(delaunayMesh);
     renderer.render(scene, camera);
+    delaunayLine.geometry.dispose();
+    delaunayMesh.geometry.dispose();
 }
 
-//test_inCircleVisual();
-test_inCircle();
+
+function animate() {
+    requestAnimationFrame( animate );
+    draw();
+}
+
+
 const testSuite = () => {
     test_inCircle();
     test_inCircleVisual();
-    testRandomThings();
 }
 
 const resize = () => {
     // Janky -15 term, works for now though
     renderer.setSize(window.innerWidth - 15, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 }
 
 export const createScene = (el : HTMLCanvasElement) => {
-    renderer = new THREE.WebGLRenderer({ antialias: true, canvas: el });
+    renderer = new THREE.WebGLRenderer({ canvas: el});
     resize();
     testSuite();
+    clearScene();
     animate();
 }
 
 export const updateScene = () => {
     points.push(createRandomPoint());
-    animate();
+    pointTrajectories.push(createRandomTrajectory());
 }
 
 window.addEventListener('resize', resize);

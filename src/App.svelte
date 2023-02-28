@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Triangles from './lib/Triangles.svelte';
+import Triangles from './lib/Triangles.svelte';
 </script>
 
 <main>
@@ -8,8 +8,9 @@
         <h1 class="name_header">Evan Strohman</h1>
         <div class="name_header_underscore"></div>
     </div>
+    <Triangles />
   </div>
-  <Triangles />
+  
 </main>
 
 <style>
@@ -21,7 +22,6 @@ main{
 }
 
 .hero {
-  background-image: linear-gradient(to bottom,lightblue,white);
   height: 100vh;
   padding: 0;
   margin: 0;
