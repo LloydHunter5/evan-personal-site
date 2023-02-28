@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { lerp } from 'three/src/math/MathUtils';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0x724e2c );
+scene.background = new THREE.Color( 0xffffff );
 const zoom = 50;
 const getWidth = () => window.innerWidth/zoom;
 const getHeight = () => window.innerHeight/zoom;
-const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.9,10.1);
+const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.99999,10.00001);
 
 // set the camera position
 camera.position.set(0,0,10);
