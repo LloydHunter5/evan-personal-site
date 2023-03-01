@@ -1,4 +1,5 @@
 <script lang="ts">
+    import TriangleButton from './lib/TriangleButtons.svelte';
 import Triangles from './lib/Triangles.svelte';
 </script>
 
@@ -8,7 +9,9 @@ import Triangles from './lib/Triangles.svelte';
         <h1 class="name_header">Evan Strohman</h1>
         <div class="name_header_underscore"></div>
     </div>
+    <TriangleButton/>
     <Triangles />
+
   </div>
   
 </main>
@@ -54,6 +57,4 @@ main{
   border-radius: 0.15rem;
   z-index: 0;
 }
-
-
 </style>
