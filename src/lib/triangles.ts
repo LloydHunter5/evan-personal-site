@@ -1,18 +1,19 @@
 import * as THREE from 'three';
 import { lerp } from 'three/src/math/MathUtils';
 
+// Create scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0xffffff );
+
+// Camera/viewport setup
 const zoom = 50;
 const getWidth = () => window.innerWidth/zoom;
 const getHeight = () => window.innerHeight/zoom;
-const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.99999,10.00001);
-
-// set the camera position
+const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.999999,10.1111111);
 camera.position.set(0,0,10);
 camera.lookAt(0,0,0);
 
-//fit the rendered scene inside the viewport element
+//Create blank renderer, this will be assigned by the *createScene* 
 let renderer : THREE.WebGLRenderer;
 interface Point {
     x : number;
@@ -23,32 +24,28 @@ interface Triangle {
     b : Point;
     c : Point;
 }
-interface Color {
+export interface Color {
     r : number;
     g : number;
     b : number;
 }
 
-function createRandomPoints(n : number) {
-    const points : Point[] = [];
-    for (let i = 0; i < n; i++) {
-        points.push(createRandomPoint());
-    }
-    return points;
-}
-function createRandomPoint(){
+
+
+const createRandomPoint = () => {
     return {x:(Math.random() * getWidth() - getWidth()/2), y:(Math.random() * getHeight() - getHeight()/2)};
 }
-function createRandomTrajectory(){
-    return {x:Math.random() * 0.05 - 0.025, y:Math.random() * 0.05-0.025};
+
+const createRandomTrajectory = () => {
+    return {x:(Math.random() * 0.05 - 0.025), y:(Math.random() * 0.05 - 0.025)};
+}
+function createRandomPoints(n : number) {
+    const points : Point[] = Array(n).fill(0).map(() => createRandomPoint());
+    return points;
 }
 
 function createRandomTrajectories(n : number) {
-    const trajectories : Point[] = [];
-    for (let i = 0; i < n; i++) {
-        // trajectories between -0.025 and 0.025
-        trajectories.push(createRandomTrajectory() );
-    }
+    const trajectories : Point[] = Array(n).fill(0).map(() => createRandomTrajectory());
     return trajectories;
 }
 
@@ -313,10 +310,26 @@ points.push({x: -getWidth(), y: getHeight()});
 points.push({x: getWidth(), y: -getHeight()});
 points.push({x: getWidth(), y: getHeight()});
 
-const COOL_BLUE = {r: 5, g: 163, b: 164};
+const WARM_GREEN = {r: 5, g: 163, b: 164};
+const COOL_PURPLE = {r: 0x3A, g: 0x07, b: 0x51};
+const COOL_GREEN = {r: 0x00, g: 0x9E, b: 0x9E};
 const DARK_BLUE = {r: 0, g: 99, b: 115};
 const DARK_PURPLE = {r: 0x3A, g: 0x07, b: 0x51};
 const WARM_RED = {r: 0xEE, g: 0x3E, b: 0x38};
+const WARM_ORANGE = {r: 0xF9, g: 0x8B, b: 0x2D};
+const WARM_YELLOW = {r: 0xF9, g: 0xC2, b: 0x2D};
+const WARM_PINK = {r: 0xF9, g: 0x2D, b: 0x8B};
+
+let COLOR1 = COOL_GREEN;
+let COLOR2 = WARM_RED;
+
+export const setColor1 = (color : Color) => {
+    COLOR1 = color;
+}
+export const setColor2 = (color : Color) => {
+    COLOR2 = color;
+}
+
 const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff} );
 
 const pointMaterialOutOfCircle = new THREE.PointsMaterial( { color: 0xff0000, size: 1 } );
@@ -398,12 +411,9 @@ function draw(){
     }
     clearScene();
     let delaunayTriangles : Map<Triangle,boolean> = createDelaunayTriangles(points);
-    let delaunayLine = new THREE.Line(createLineUsingDFSTriangles(delaunayTriangles),lineMaterial);
-    let delaunayMesh = createGradientDelaunayMesh(delaunayTriangles,WARM_RED,COOL_BLUE);
-    scene.add(delaunayLine);
+    let delaunayMesh = createGradientDelaunayMesh(delaunayTriangles,COLOR1,COLOR2);
     scene.add(delaunayMesh);
     renderer.render(scene, camera);
-    delaunayLine.geometry.dispose();
     delaunayMesh.geometry.dispose();
 }
 
@@ -421,16 +431,17 @@ const testSuite = () => {
 
 const resize = () => {
     // Janky -15 term, works for now though
-    renderer.setSize(window.innerWidth - 15, window.innerHeight);
+    //TODO: Fix this for mobile
+    renderer.setSize(window.innerWidth-15, window.innerHeight);
     camera.updateProjectionMatrix();
 }
 
 export const createScene = (el : HTMLCanvasElement) => {
     renderer = new THREE.WebGLRenderer({ canvas: el});
-    resize();
     testSuite();
     clearScene();
     animate();
+    resize();
 }
 
 export const updateScene = () => {
