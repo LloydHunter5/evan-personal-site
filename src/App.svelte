@@ -1,16 +1,23 @@
 <script lang="ts">
-    import TriangleButton from './lib/TriangleButtons.svelte';
+    import NavBar from './lib/NavBar.svelte';
+import TriangleButton from './lib/TriangleButtons.svelte';
 import Triangles from './lib/Triangles.svelte';
 </script>
 
 <main>
-  <div class="hero">
+  <NavBar />
+  <div class="hero" id="hero">
     <div class="namecard">        
         <h1 class="name_header">Evan Strohman</h1>
         <div class="name_header_underscore"></div>
     </div>
     <TriangleButton/>
     <Triangles />
+  </div>
+  <div class="about">
+    
+  </div>
+  <div>
 
   </div>
   
@@ -37,7 +44,7 @@ main{
   padding:0;
   margin:0;
   bottom: 10vh;
-  left: 5vw; 
+  left: 5vw;
 }
 
 .name_header{
@@ -57,4 +64,20 @@ main{
   border-radius: 0.15rem;
   z-index: 0;
 }
+
+.about{
+  height: 100vh;
+  width: calc(clientWidth);
+  background-color: black;
+}
+
+@keyframes namecard_rise_in {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 </style>

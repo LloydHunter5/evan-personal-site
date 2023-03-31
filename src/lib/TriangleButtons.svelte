@@ -4,7 +4,7 @@
     import type { Color } from './triangles';
 
     let hoverColor : string = "#9fcbbe";
-    let baseColor : string = "#222222";
+    let baseColor : string = "#000000";
     let clickColor : string = "#01016f";
 
     let div1 : HTMLDivElement;
@@ -68,6 +68,7 @@
         color: white;
         width: 0;
         height: 0;
+        opacity: 60%;
         border-style: solid;
         border-width: 2rem 3.465rem 2rem 0;
         transition-duration: 0.3s;
