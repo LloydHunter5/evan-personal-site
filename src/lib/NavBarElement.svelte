@@ -10,11 +10,11 @@
     onMount(() =>
     {
         squareButton.addEventListener("mouseover", () => {
-            squareButton.style.border = "2px solid white";
+            squareButton.style.border = "1px solid gray";
             label.style.opacity = "100%";
         });
         squareButton.addEventListener("mouseout", () => {
-            squareButton.style.border = "2px solid transparent";
+            squareButton.style.border = "1px solid transparent";
             label.style.opacity = "0%";
         });
     }
@@ -42,6 +42,7 @@
         border-radius: 20%;
         opacity: 50%;
         margin: 0.2rem;
+        border: 1px solid transparent;
     }
 
     .label{

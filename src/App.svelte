@@ -14,12 +14,15 @@ import Triangles from './lib/Triangles.svelte';
     <TriangleButton/>
     <Triangles />
   </div>
-  <div class="about">
+  <div class="about" id="about">
     
   </div>
-  <div>
+
+  <div class="projects" id="projects">
 
   </div>
+
+  <div class="footer" id="footer"></div>
   
 </main>
 
@@ -68,7 +71,17 @@ main{
 .about{
   height: 100vh;
   width: calc(clientWidth);
-  background-color: black;
+  background-color: white;
+}
+.projects{
+  height: 100vh;
+  width: calc(clientWidth);
+  background-color: gray;
+}
+.footer{
+  height: 30vh;
+  width: calc(clientWidth);
+  background-color: darkgray;
 }
 
 @keyframes namecard_rise_in {
