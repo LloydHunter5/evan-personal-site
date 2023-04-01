@@ -4,7 +4,7 @@ This is a website I've started to build to showcase my programming skill and ser
 ## Features
 #### Current Features
 * Neat little homepage
-* Some pretty snazzy background art using Delaunay Triangulation (**WORK IN PROGRESS**, the algorithm is very bad with memory management at the moment)
+* Some pretty background art using Delaunay Triangulation
 #### Planned Features
 * Project directory
 * Navigation elements
