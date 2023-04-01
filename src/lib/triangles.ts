@@ -430,14 +430,12 @@ const testSuite = () => {
 }
 
 const resize = () => {
-    // Janky -15 term, works for now though
-    //TODO: Fix this for mobile
-    renderer.setSize(window.innerWidth-15, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     camera.updateProjectionMatrix();
 }
 
 export const createScene = (el : HTMLCanvasElement) => {
-    renderer = new THREE.WebGLRenderer({ canvas: el});
+    renderer = new THREE.WebGLRenderer({ canvas: el, precision: "lowp", powerPreference: "low-power"});
     testSuite();
     clearScene();
     animate();

@@ -31,14 +31,17 @@ import Triangles from './lib/Triangles.svelte';
 main{
   padding: 0;
   margin: 0;
-  width: calc(clientWidth);
 }
+
+main::-webkit-scrollbar{
+  display:none;
+}
+
 
 .hero {
   height: 100vh;
   padding: 0;
   margin: 0;
-  width: calc(clientWidth);
   position: relative;
 }
 
@@ -70,17 +73,14 @@ main{
 
 .about{
   height: 100vh;
-  width: calc(clientWidth);
   background-color: white;
 }
 .projects{
   height: 100vh;
-  width: calc(clientWidth);
   background-color: gray;
 }
 .footer{
   height: 30vh;
-  width: calc(clientWidth);
   background-color: darkgray;
 }
 
