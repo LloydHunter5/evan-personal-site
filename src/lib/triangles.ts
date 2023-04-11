@@ -253,12 +253,10 @@ function createGradientDelaunayMesh(triangles : Map<Triangle,boolean>, c1 : Colo
     let delaunayMesh = new THREE.Mesh();
     let delaunayGeometry = new THREE.BufferGeometry();
     let positions : number[] = new Array(triangles.size*3);
-    let colors : number[] = new Array(triangles.size);
     let count = 0;
-    let colorCount = 0;
     let meshColors : THREE.MeshBasicMaterial[] = [];
     triangles.forEach((_,triangle) => {
-        positions[count] = triangle.a.x;
+        positions[count]   = triangle.a.x;
         positions[count+1] = triangle.a.y;
         positions[count+2] = 0;
         positions[count+3] = triangle.b.x;
@@ -272,7 +270,6 @@ function createGradientDelaunayMesh(triangles : Map<Triangle,boolean>, c1 : Colo
         let g = lerp(c1.g,c2.g, lerpPercent) / 255;
         let b = lerp(c1.b,c2.b, lerpPercent) / 255;
         count+=9;
-        colorCount+=3;
         let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, wireframe: false, color: new THREE.Color(r,g,b)});
         meshColors.push(material);
     });

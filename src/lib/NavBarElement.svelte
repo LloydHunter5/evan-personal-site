@@ -10,11 +10,13 @@
     onMount(() =>
     {
         squareButton.addEventListener("mouseover", () => {
-            squareButton.style.border = "1px solid gray";
+            squareButton.style.opacity = "90%";
+            squareButton.style.backgroundColor = "black";
             label.style.opacity = "100%";
         });
         squareButton.addEventListener("mouseout", () => {
-            squareButton.style.border = "1px solid transparent";
+            squareButton.style.opacity = "50%";
+            squareButton.style.backgroundColor = "black";
             label.style.opacity = "0%";
         });
     }
@@ -36,22 +38,20 @@
         justify-content: right;
     }
     .square-button{
-        width: 45px;
-        height: 45px;
+        width: 20px;
+        height: 35px;
         background-color: black;
-        border-radius: 20%;
+        border-radius: 10%;
         opacity: 50%;
         margin: 0.2rem;
-        border: 1px solid transparent;
+        border: 2px solid transparent;
     }
 
     .label{
-        transition-duration: 0.1s;
-        padding-right: 0.5rem;
+        transition-duration: 0.25s;
+        padding-right: 0.1rem;
         opacity: 0%;
+        font: 460 0.9rem 'Lora', serif;
     }
-
-    
-
     
 </style>

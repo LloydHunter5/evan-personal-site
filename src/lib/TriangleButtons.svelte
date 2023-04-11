@@ -59,8 +59,8 @@
         top: 0;
         left: 0;
         z-index: 1;
-        width: 100px;
-        height: 100px;
+        width: 1rem;
+        height: 1rem;
     }
     .triangle_button{
         position: absolute;
@@ -73,7 +73,7 @@
         border-width: 2rem 3.465rem 2rem 0;
         transition-duration: 0.3s;
         transition-timing-function: cubic-bezier(0,.88,.78,.86);
-        border-color: transparent #222222 transparent transparent;
+        border-color: transparent #000000 transparent transparent;
     }
     .b1{
         rotate: 60deg;

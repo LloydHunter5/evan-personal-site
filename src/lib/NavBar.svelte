@@ -15,5 +15,7 @@
         right: 20px;
         top: 30px;
         z-index: 10;
+        padding:0;
+        margin:0;
     }
 </style>
