@@ -18,6 +18,7 @@
   </div>
   <div class="about page" id="about">
     <h1 class="about_title">About Me</h1>
+    <p class="about_text"> I'm a student developing his skills in interesting algorithms and techniques. This site serves as a hub for all of my projects and experience for anyone interested. </p>
   </div>
 
   <div class="projects page" id="projects">
@@ -25,6 +26,12 @@
     <Showcase link1="https://github.com/LloydHunter5/Toy-Compiler" 
               link2="https://github.com/LloydHunter5/wpod" 
               link3="https://github.com/LloydHunter5/evan-personal-site"
+              title1="Toy Compiler"
+              title2="wpod"
+              title3="This website!"
+              text1="I've been working on this for around about a year now, as a long lasting project for my compilers class at school. It has an LL(1) recursive descent parser, type-checking, and code generation all (mostly) implemented for a language called 'toy'"
+              text2="This is a project I decided to undertake to learn the basics of programming in Rust. It fetches publicly available images from a few selectable sources, and automatically sets your desktop background to that image using a minimal CLI"
+              text3="This site serves as a hub for all of my projects now and in the future. I decided to develop it to aid my job application process, as well as learning a bit about HTML, CSS, Javascript, Typescript, Three.js, and the Svelte framework"
     />
   </div>
 
@@ -104,30 +111,43 @@ main::-webkit-scrollbar{
   padding: 2rem;
   font: 300 3rem 'Lora', serif;
 }
+
+.about_text{
+  padding: 50px;
+  padding-left: 200px;
+  padding-right: 200px;
+  font-size: 2rem;
+}
 .projects{
-  height: 100vh;
+  min-height: 100vh;
   background-color: gray;
   scroll-snap-align: start;
+  background-image: url('./assets/star_nasa.png');
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding-bottom: 40px;
 }
+
 .projects_title{
   margin: 0;
   padding: 2rem;
   font: 300 3rem 'Lora', serif;
+  color: white;
 }
 .footer{
   height: 30vh;
   background-color: darkgray;
   scroll-snap-align: end;
-  display: block;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  flex-direction: vertical;
+  font: 300 1rem 'Lora', serif;
 }
 .footer_text{
   margin:0;
-  font: 300 1rem 'Lora', serif;
   color: black;
-  opacity: 50%;
+  position: absolute;
+  right: 10%;
 }
 
 .links{
@@ -135,7 +155,12 @@ main::-webkit-scrollbar{
   padding: 1rem;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  left: 5%;
   display: flex;
+}
+.links a{
+  padding: 1rem;
 }
 
 </style>

@@ -4,12 +4,20 @@
     export let link2 : string;
     export let link3 : string;
 
+    export let title1 : string;
+    export let title2 : string;
+    export let title3 : string;
+
+    export let text1 : string;
+    export let text2 : string;
+    export let text3 : string;
+
 </script>
 
 <div class="showcase">
-    <ShowcaseElement link={link1} />
-    <ShowcaseElement link={link2} />
-    <ShowcaseElement link={link3} />
+    <ShowcaseElement link={link1} title={title1} text={text1} />
+    <ShowcaseElement link={link2} title={title2} text={text2} />
+    <ShowcaseElement link={link3} title={title3} text={text3} />
 </div>
 
 <style>
@@ -20,5 +28,6 @@
         flex-wrap: wrap;
         width: 100vw;
         max-width: 100%;
+
     }
 </style>
