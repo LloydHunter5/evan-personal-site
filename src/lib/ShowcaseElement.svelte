@@ -28,12 +28,12 @@
         text-decoration: none;
     }
     .content:hover{
-        background-color: goldenrod;
+        background-color: lightblue;
     }
     .content{
         width: 300px;
         height: 220px;
-        background-color: lightgoldenrodyellow;
+        background-color: white;
         background-position: center top;
         padding: 0;
         margin: 0;
