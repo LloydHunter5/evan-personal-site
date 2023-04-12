@@ -9,7 +9,7 @@ scene.background = new THREE.Color( 0xffffff );
 const zoom = 50;
 const getWidth = () => window.innerWidth/zoom;
 const getHeight = () => window.innerHeight/zoom;
-const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.999999,10.1111111);
+const camera = new THREE.OrthographicCamera(-getWidth()/2, getWidth()/2,getHeight()/2,-getHeight()/2,9.9999,10.000001);
 camera.position.set(0,0,10);
 camera.lookAt(0,0,0);
 
@@ -432,7 +432,7 @@ const resize = () => {
 }
 
 export const createScene = (el : HTMLCanvasElement) => {
-    renderer = new THREE.WebGLRenderer({ canvas: el, precision: "lowp", powerPreference: "low-power"});
+    renderer = new THREE.WebGLRenderer({ canvas: el, precision: "lowp", powerPreference: "low-power", antialias: true});
     testSuite();
     clearScene();
     animate();

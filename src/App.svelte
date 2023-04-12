@@ -2,7 +2,8 @@
   import NavBar from './lib/NavBar.svelte';
   import TriangleButton from './lib/TriangleButtons.svelte';
   import Triangles from './lib/Triangles.svelte';
-  import halfMoonBayImage from './assets/IMG_1604.jpg';
+  import Showcase from './lib/Showcase.svelte';
+  import resume from './assets/evanstrohman_resume_software_engineer.pdf';
 </script>
 
 <main>
@@ -21,9 +22,20 @@
 
   <div class="projects page" id="projects">
     <h1 class="projects_title">Recent Projects</h1>
+    <Showcase link1="https://github.com/LloydHunter5/Toy-Compiler" 
+              link2="https://github.com/LloydHunter5/wpod" 
+              link3="https://github.com/LloydHunter5/evan-personal-site"
+    />
   </div>
 
-  <div class="footer" id="footer"></div>
+  <div class="footer" id="footer">
+    <div class="links">
+      <a href="https://github.com/LloydHunter5">github</a>
+      <a href="https://www.linkedin.com/in/evan-strohman-4b5333265/">linkedin</a>
+      <a href={resume}>resume</a>
+    </div>
+    <p class="footer_text">Built by Evan Strohman using <a href="https://svelte.dev/">Svelte</a> + <a href="https://threejs.org/">Three.js</a></p>
+  </div>
 </main>
 
 <style>
@@ -106,15 +118,24 @@ main::-webkit-scrollbar{
   height: 30vh;
   background-color: darkgray;
   scroll-snap-align: end;
+  display: block;
+  align-items: center;
+  justify-content: center;
+  flex-direction: vertical;
+}
+.footer_text{
+  margin:0;
+  font: 300 1rem 'Lora', serif;
+  color: black;
+  opacity: 50%;
 }
 
-@keyframes namecard_rise_in {
-  0% {
-    transform: translateY(100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
+.links{
+  margin: 0;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+  display: flex;
 }
 
 </style>
